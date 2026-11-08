@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>词境 Lexicon Studio — IELTS &amp; GRE 高阶词汇与语料关系工作台</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('lexicon.studio.theme.v1')==='dark'?'dark':'light'}catch(e){}</script>
+  <link rel="stylesheet" href="assets/fonts.css" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <!-- 模块化词库分片（支持 file:// 本地双击直开与 Web 服务器部署） -->
+  <script src="data/lexicon-writing.js"></script>
+  <script src="data/lexicon-ielts-1.js"></script>
+  <script src="data/lexicon-ielts-2.js"></script>
+  <script src="data/lexicon-gre.js"></script>
+  <!-- 核心运行时与应用逻辑 -->
+  <script src="assets/lexicon-io.js"></script>
+  <script src="assets/vendor.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
