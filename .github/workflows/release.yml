@@ -1,0 +1,79 @@
+name: Deploy Pages & Publish Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v3.0.0)'
+        required: false
+        default: 'v3.0.0'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-and-release"
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Release Archives
+        run: |
+          mkdir -p dist-release
+          zip -r -9 dist-release/lexicon-studio-modular-v3.zip index.html assets data/lexicon-writing.js data/lexicon-ielts-1.js data/lexicon-ielts-2.js data/lexicon-gre.js README.md
+          zip -9 dist-release/lexicon-studio-single-file-v3.zip lexicon-studio.html README.md
+          cp lexicon-studio.html dist-release/lexicon-studio.html
+
+      - name: Prepare GitHub Pages Artifact
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp lexicon-studio.html _site/
+          cp -r assets _site/
+          cp -r data _site/
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || 'v3.0.0' }}
+          name: "Lexicon Studio v3.0 — 10,200 IELTS & GRE Atlas (Modular + Single-File)"
+          body: |
+            ## 🍎 Lexicon Studio v3.0
+            - **10,200 零重合词条**（雅思核心 7,020 + 雅思写作 Band 8+ 精选 159 + GRE 核心 3,021）
+            - **语义关系全面净化**：剔除所有凑数/弱相关同反义词，新增 **19,000+ 高频语法搭配伙伴词**（`动+名`、`形+名`、`名+名`、`副+动`、`副+形`、`动+形`）
+            - **Apple Liquid Glass 毛玻璃双主题 UI**（支持 120fps 流畅滚动）
+
+            ### 📦 下载说明（任选其一）
+            1. **`lexicon-studio-modular-v3.zip`（推荐）**：多文件模块化离线版。解压后双击 `index.html` 即可秒开使用。
+            2. **`lexicon-studio-single-file-v3.zip` / `lexicon-studio.html`**：单文件便携版。全部词库与代码内嵌于单个 HTML 文件中，双击即用。
+          files: |
+            dist-release/lexicon-studio-modular-v3.zip
+            dist-release/lexicon-studio-single-file-v3.zip
+            dist-release/lexicon-studio.html
+
+  deploy-pages:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
